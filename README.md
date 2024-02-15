@@ -170,6 +170,11 @@ print(dir(comtrade_reader))
 - **构建录波文件**：使用comtrade_generate.py脚本，用户可以定义电压和电流信号的参数（例如频率、幅度等），以及采样率等信息，生成COMTRADE格式的录波文件。这些文件可以用于测试或教学目的。
 
 
+<span id="Demo-6"></span>
+## 6-开机自启动
+
+### 案例介绍
+
 
 
 
