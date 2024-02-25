@@ -17,7 +17,8 @@ class DataSender:
         self.analog_data_U, self.analog_data_I = self.analog_V_I
         self.segment_size = 3000  # 每个数据段的大小
         self.current_segment_index = 0  # 当前发送的数据段索引
-
+        self.send_data_count=0
+        self.inter_time=0.5
     def start(self):
         self.thread.start()
 
@@ -26,16 +27,17 @@ class DataSender:
         self.thread.join()
 
     def run(self):
-        next_send_time = time.time() + 0.5
+        next_send_time = time.time() + self.inter_time
         while self.running:
             current_time = time.time()
             if current_time >= next_send_time:
                 self.send_data()
-                next_send_time = current_time + 0.5
+                next_send_time = current_time + self.inter_time
 
     def send_data(self):
         segment_count_U = len(self.analog_data_U) // self.segment_size
         segment_count_I = len(self.analog_data_I) // self.segment_size
+
         # 确保U和I数据的段数相等
         segment_count = min(segment_count_U, segment_count_I)
 
@@ -46,12 +48,26 @@ class DataSender:
         # 计算当前段的起始和结束索引
         start_index = self.current_segment_index * self.segment_size
         end_index = start_index + self.segment_size
+
         # 从原始数据中切片当前段
         u_Vs_segment = self.analog_data_U[start_index:end_index]
         i_As_segment = self.analog_data_I[start_index:end_index]
 
         # 创建并发送当前数据段
-        content = self.message_handler.create_message(u_Vs=u_Vs_segment, i_As=i_As_segment)
+        if self.send_data_count%10==0 and self.send_data_count!=0:
+            con_comm='normal'
+        # 1) missing_header
+        # 2) missing_footer
+        # 3) missing_header_footer
+        # 4) corrupted_data
+        # 5) missing_sequence
+        # 6) missing_part_data_footer
+        # 7) missing_part_data_header
+
+        else:
+            con_comm =None
+        self.send_data_count+=1
+        content = self.message_handler.create_message(u_Vs=u_Vs_segment, i_As=i_As_segment,error=con_comm)
         start_time = time.time()
         elapsed_time = self.communicator.write_data(content)
         current_time = time.time()
@@ -60,7 +76,7 @@ class DataSender:
         else:
             interval = 0
         self.last_send_time = current_time
-        MessageHandler.show_speed(content, elapsed_time, "write", interval)
+        MessageHandler.show_speed(content, elapsed_time, "write", interval,con_comm)
 
         # 准备发送下一个数据段
         self.current_segment_index += 1

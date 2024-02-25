@@ -9,7 +9,7 @@ class LoggerConfig:
 
 def generate_log_file_name(log_type):
     current_time = datetime.now()
-    return os.path.join(LoggerConfig.CURRENT_PATH, f"log_{log_type}_{current_time.strftime('%Y%m%d_%H%M%S')}.log")
+    return os.path.join(LoggerConfig.CURRENT_PATH, f"log_{log_type}_{current_time.strftime('%Y%m%d%H')}.log")
 
 def setup_logger():
     loggers_config = {

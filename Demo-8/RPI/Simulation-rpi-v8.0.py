@@ -33,15 +33,12 @@ class SerialReceiver:
             self.serial_port = None
         self.header = b'\x00\x68\x00\x68\x00\x68'
         self.footer = b'\x00\x16\x00\x16\x00\x16'
-        self.data_length = 12000  # 数据编码部分的长度
+        self.data_length = 12000 + 2
         self.last_process_time = time.time()
-        # 报文总长度 = 报文头长度 + 顺序编码长度(2字节) + 数据长度 + 报文尾长度
-        self.total_message_length = len(self.header) + 2 + self.data_length + len(self.footer)
         self.running = True
         self.expected_sequence_number = None
-        self.process_count = 0
-        self.timeout_threshold = 1.5  # Timeout threshold in seconds
-
+        self.process_count=0
+        self.timeout_threshold = 0.8  # Timeout threshold in seconds
 
     def read_message(self):
         buffer = b''
@@ -49,39 +46,37 @@ class SerialReceiver:
         while self.running and self.serial_port:
             if time.time() - last_receive_time > self.timeout_threshold and self.expected_sequence_number is not None:
                 self.expected_sequence_number = None
+                self.id_frame_receive = 0
                 error_content=f"Timeout detected, resetting sequence numbering."
                 loggers['error'].error(error_content)
 
             buffer += self.serial_port.read(self.serial_port.in_waiting or 1)
-            while len(buffer) >= self.total_message_length:
+            while True:
                 header_index = buffer.find(self.header)
                 if header_index != -1:
-                    if len(buffer) >= header_index + self.total_message_length:
+                    if len(buffer) >= header_index + len(self.header) + self.data_length + len(self.footer):
                         footer_index = buffer.find(self.footer, header_index + len(self.header) + self.data_length)
-                        if footer_index-header_index==self.total_message_length - len(self.footer):
+                        if footer_index != -1:
                             seq_num_bytes = buffer[header_index + len(self.header):header_index + len(self.header) + 2]
                             seq_num = int.from_bytes(seq_num_bytes, byteorder='big')
-                            # 序列号验证和处理
                             if self.expected_sequence_number is None:
-                                self.id_message_receive = 0
-
-
+                                self.expected_sequence_number = seq_num
+                                self.id_frame_receive = 0
                             elif seq_num != self.expected_sequence_number:
-                                self.id_message_receive = 0
-                                error_content = f"Unexpected sequence number: {seq_num}. Expected: {self.expected_sequence_number}"
+                                self.id_frame_receive = 0
+                                error_content=f"Unexpected sequence number: {seq_num}. Expected: {self.expected_sequence_number}"
                                 loggers['error'].error(error_content)
-                                print(error_content)
-                            else:
-                                self.id_message_receive += 1
 
-                            data = buffer[header_index + len(self.header) + 2:footer_index]
-                            self.process_data(data, self.id_message_receive)
+                            else:
+                                self.id_frame_receive += 1
                             self.expected_sequence_number = (seq_num + 1) % 10
                             last_receive_time = time.time()  # Update last receive time after processing a message
+                            data = buffer[header_index + len(self.header) + 2:footer_index]
+                            self.process_data(data, self.id_frame_receive)
                             buffer = buffer[footer_index + len(self.footer):]
                             continue
                         else:
-                            buffer = buffer[footer_index+len(self.footer):]
+                            buffer = buffer[header_index:]
                             break
                     else:
                         break
@@ -95,7 +90,6 @@ class SerialReceiver:
         interval = current_time - self.last_process_time
         self.last_process_time = current_time
         data=convert_data(data)
-
         num_data_items = len(data) // 2  # 因为每个uint16占2字节
         V_digital=data[:num_data_items]
         I_digital=data[num_data_items:]
@@ -105,7 +99,7 @@ class SerialReceiver:
         print(f"{timemark} - Processing data... (Interval: {interval:.2f} seconds, Data length: {len(data)}, Sequence Number: {sequence_number})")
 
         self.process_count += 1  # 每次处理数据时计数器加1
-        if self.process_count >= 10000:  # 每处理20次数据后生成一次COMTRADE文件
+        if self.process_count >= 1000:  # 每处理20次数据后生成一次COMTRADE文件
             self.write_comtrade_in_thread(V_digital, I_digital)
             self.process_count = 0  # 重置计数器
 
