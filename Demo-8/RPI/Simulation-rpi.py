@@ -33,10 +33,11 @@ class SerialReceiver:
             self.serial_port = None
         self.header = b'\x00\x68\x00\x68\x00\x68'
         self.footer = b'\x00\x16\x00\x16\x00\x16'
-        self.data_length = 12000  # 数据编码部分的长度
+        self.data_length = 12000  # 数据编码部分的长度+校验码
+        self.valid_length=1
         self.last_process_time = time.time()
         # 报文总长度 = 报文头长度 + 顺序编码长度(2字节) + 数据长度 + 报文尾长度
-        self.total_message_length = len(self.header) + 2 + self.data_length + len(self.footer)
+        self.total_message_length = len(self.header) + 2 + self.data_length+self.valid_length + len(self.footer)
         self.running = True
         self.expected_sequence_number = None
         self.process_count = 0
@@ -57,14 +58,14 @@ class SerialReceiver:
                 header_index = buffer.find(self.header)
                 if header_index != -1:
                     if len(buffer) >= header_index + self.total_message_length:
-                        footer_index = buffer.find(self.footer, header_index + len(self.header) + self.data_length)
+                        footer_index = buffer.find(self.footer, header_index + len(self.header) + self.data_length+self.valid_length)
                         if footer_index-header_index==self.total_message_length - len(self.footer):
                             seq_num_bytes = buffer[header_index + len(self.header):header_index + len(self.header) + 2]
+
                             seq_num = int.from_bytes(seq_num_bytes, byteorder='big')
                             # 序列号验证和处理
                             if self.expected_sequence_number is None:
                                 self.id_message_receive = 0
-
 
                             elif seq_num != self.expected_sequence_number:
                                 self.id_message_receive = 0
@@ -74,12 +75,22 @@ class SerialReceiver:
                             else:
                                 self.id_message_receive += 1
 
-                            data = buffer[header_index + len(self.header) + 2:footer_index]
-                            self.process_data(data, self.id_message_receive)
-                            self.expected_sequence_number = (seq_num + 1) % 10
-                            last_receive_time = time.time()  # Update last receive time after processing a message
-                            buffer = buffer[footer_index + len(self.footer):]
-                            continue
+                            data_with_checksum = buffer[header_index + len(self.header) + 2:footer_index]
+                            data,checksum=data_with_checksum[:-self.valid_length],data_with_checksum[-1]
+                            if self.validate_checksum(data_with_checksum):
+                                self.process_data(data, self.id_message_receive)
+                                self.expected_sequence_number = (seq_num + 1) % 10
+                                last_receive_time = time.time()  # Update last receive time after processing a message
+                                buffer = buffer[footer_index + len(self.footer):]
+                                continue
+                            else:
+                                # 校验码不匹配，记录错误或采取其他措施
+                                error_content = "Data checksum validation failed."
+                                loggers['error'].error(error_content)
+                                print(error_content)
+                                buffer = buffer[footer_index + len(self.footer):]
+                                break
+
                         else:
                             buffer = buffer[footer_index+len(self.footer):]
                             break
@@ -89,6 +100,17 @@ class SerialReceiver:
                     buffer = buffer[-len(self.header):]
                     break
 
+    def validate_checksum(self, data_with_checksum):
+        data = data_with_checksum[:-1]  # 不包括最后的校验码字节
+        received_checksum = data_with_checksum[-1]
+        # 计算数据的校验码
+        calculated_checksum = self.calculate_checksum(data)
+        # 比较校验码
+        return received_checksum == calculated_checksum
+
+    def calculate_checksum(self,data):
+        checksum = sum(data) % 256  # 只保留累加结果的最低有效字节
+        return checksum
 
     def process_data(self, data, sequence_number):
         current_time = time.time()

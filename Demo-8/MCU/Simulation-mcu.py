@@ -34,6 +34,8 @@ class DataSender:
                 self.send_data()
                 next_send_time = current_time + self.inter_time
 
+
+
     def send_data(self):
         segment_count_U = len(self.analog_data_U) // self.segment_size
         segment_count_I = len(self.analog_data_I) // self.segment_size
@@ -53,9 +55,11 @@ class DataSender:
         u_Vs_segment = self.analog_data_U[start_index:end_index]
         i_As_segment = self.analog_data_I[start_index:end_index]
 
+
+
         # 创建并发送当前数据段
         if self.send_data_count%10==0 and self.send_data_count!=0:
-            con_comm='normal'
+            con_comm=None
         # 1) missing_header
         # 2) missing_footer
         # 3) missing_header_footer

@@ -28,6 +28,17 @@ class MessageHandler:
                   f"Interval time: {interval:.2f},Data transmission time:{elapsed:.2f}")
 
 
+    @staticmethod
+    def calculate_checksum(data):
+        """
+        计算累加校验码，不考虑溢出。
+        :param data: 数据序列
+        :return: 累加校验码的最低有效字节
+        """
+        checksum = sum(data) % 256  # 只保留累加结果的最低有效字节
+        return bytes([checksum])
+
+
     def create_message(self,u_Vs=[2]*10, i_As=[0.2]*10, header=b'\x00\x68'*3, footer=b'\x00\x16'*3,error=None):
 
         data = b''  # 初始化数据部分为空字节串
@@ -49,27 +60,38 @@ class MessageHandler:
             data += bytes([i_digital_high_low[0], i_digital_high_low[1]])
 
 
+        # 计算校验码
+        checksum_bytes = self.calculate_checksum(data)
+
         if error == 'missing_header':
-            message = sequence_bytes + data + footer
+            message = sequence_bytes + data+ checksum_bytes + footer
         elif error == 'missing_footer':
-            message = header + sequence_bytes + data
+            message = header + sequence_bytes + data+checksum_bytes
         elif error == 'missing_header_footer':
-            message = sequence_bytes + data
+            message = sequence_bytes + data+checksum_bytes
         elif error == 'corrupted_data':
-            message = header + sequence_bytes + data[:-10] + footer
+            message = header + sequence_bytes + data [:-10] +checksum_bytes+ footer
         elif error == 'missing_sequence':
-            message = header + data + footer
+            message = header + data +checksum_bytes+ footer
         elif error == 'missing_part_data_header':
-            message = data[:-10]+ footer
+            message = sequence_bytes+data[10:]+checksum_bytes+ footer
         elif error == 'missing_part_data_footer':
-            message = header +  data[:-10]
+            message = header + sequence_bytes+ data[:-10]+checksum_bytes
         elif error == 'random_noise':
             # Insert random noise before and after the message
             noise_prefix = bytes([0xFF] * 5)  # Example prefix noise
             noise_suffix = bytes([0xEE] * 5)  # Example suffix noise
-            message = noise_prefix + header + sequence_bytes + data + footer + noise_suffix
+            message = noise_prefix + header + sequence_bytes + data+checksum_bytes  + footer + noise_suffix
+        elif error == 'error_validation':
+            # 生成正确的校验码
+            correct_checksum_bytes = self.calculate_checksum(data)
+            # 修改校验码以模拟校验错误，例如通过增加1来简单地修改校验码（确保结果仍为一个字节）
+            incorrect_checksum_bytes = bytes([(correct_checksum_bytes[0] + 1) % 256])
+            # 构造包含错误校验码的消息
+            message = header + sequence_bytes + data + incorrect_checksum_bytes + footer
+
         else:
-            message = header + sequence_bytes + data + footer
+            message = header + sequence_bytes + data+ checksum_bytes + footer
 
         return message
 
@@ -115,3 +137,17 @@ class MessageHandler:
         i_digital_high_low = convert_signal(i_trans)
 
         return v_digital_high_low, i_digital_high_low
+
+if __name__=="__main__":
+    pass
+    # 创建一个示例字节序列，使用16进制表示的字节数据
+    data_bytes_hex = bytes.fromhex('01 02 03 04 10 ff')
+
+    # 调用 calculate_checksum_bytes 方法计算校验码
+    checksum_bytes = MessageHandler.calculate_checksum(data_bytes_hex)
+
+    # 打印结果
+    print(f"Data (hex): {data_bytes_hex.hex(' ')}")
+    print(f"Checksum (as byte): {checksum_bytes}")
+    print(f"Checksum (as integer): {int.from_bytes(checksum_bytes, byteorder='big')}")
+
