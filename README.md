@@ -301,6 +301,7 @@ python setup_service.py
 ## 10-看门狗配置
 手动执行一些步骤来测试和观察看门狗功能
 1. **检查看门狗硬件是否启用**  
+
 首先，检查/boot/config.txt文件，确保看门狗硬件已经启用。
 ```bash
 grep 'dtparam=watchdog=on' /boot/config.txt
