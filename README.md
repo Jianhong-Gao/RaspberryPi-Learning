@@ -12,8 +12,8 @@
 |  6  |     [开机自启动](#Demo-6)     | 已完成 |
 |  7  | [模拟单片机-树莓派通信v2](#Demo-7) | 已完成  |
 |  8  |    [通信冗余设计](#Demo-8)     | 已完成 |
-|  9  |   [多进程通信](#Demo-9)   | 已完成 |
-
+|  9  |     [多进程通信](#Demo-9)     | 已完成 |
+| 10  |    [树莓派看门狗](#Demo-10)    | 已完成 |
 
 <span id="Demo-1"></span>
 ## 01-串口自发自收  
@@ -294,3 +294,65 @@ python setup_service.py
 - 根据应用场景的需求调整每个进程的具体实现逻辑。
 - 确保心跳线程的间隔适当，以避免过多的网络流量或日志记录。
 通过这种设计，该案例不仅展示了多进程通信的实现方式，还通过心跳包机制增加了系统的健壮性和可监控性，适用于需要高可靠性和实时性的嵌入式系统和物联网应用。
+
+
+
+<span id="Demo-10"></span>
+## 10-看门狗配置
+手动执行一些步骤来测试和观察看门狗功能
+1. **检查看门狗硬件是否启用**  
+首先，检查/boot/config.txt文件，确保看门狗硬件已经启用。
+```bash
+grep 'dtparam=watchdog=on' /boot/config.txt
+```
+如果这条命令没有返回任何内容，你需要编辑/boot/config.txt文件，并添加下面这行
+```bash
+dtparam=watchdog=on
+```
+然后重启树莓派：
+```bash
+sudo reboot
+```
+2. **安装看门狗服务（如果尚未安装）**
+```bash
+sudo apt-get update
+sudo apt-get install watchdog
+```
+3. **配置看门狗**  
+编辑/etc/watchdog.conf文件，设置你想要的配置。例如，你可以设置：
+```bash
+watchdog-device = /dev/watchdog
+max-load-1 = 2
+```
+使用你喜欢的文本编辑器编辑这个文件，如nano：
+```bash
+sudo nano /etc/watchdog.conf
+```
+4. **启用并启动看门狗服务**  
+```bash
+sudo systemctl enable watchdog
+sudo systemctl start watchdog
+```
+
+5. **检查看门狗服务状态**  
+确认看门狗服务已经启动并且处于活动状态。
+```bash
+sudo systemctl status watchdog
+```
+6. **手动增加系统负载**  
+你可以通过执行资源密集型任务来增加系统负载，例如：
+```bash
+yes > /dev/null &
+```
+这个命令会在后台运行，并尽可能快地输出到/dev/null，从而增加CPU负载。根据你的系统，你可能需要运行多个这样的命令来显著增加负载
+7. **监控系统负载**  
+你可以使用top或htop（如果安装了的话）来监控系统负载。
+```bash
+top
+```
+或者
+```bash
+htop
+```
+8. **检查是否触发重启**
+根据你的/etc/watchdog.conf配置，如果系统负载超过了设置的阈值，看门狗应该会在一定时间后重启系统。确保你已经保存所有重要工作，因为当看门狗触发时，系统将会立即重启。

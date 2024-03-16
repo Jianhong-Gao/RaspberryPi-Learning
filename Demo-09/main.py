@@ -4,9 +4,9 @@ import queue  # 用于处理队列相关的异常
 import threading
 
 class CollectorProcess(multiprocessing.Process):
-    def __init__(self, to_algorithm_queue, start_event):
+    def __init__(self, to_detection_queue, start_event):
         super().__init__()
-        self.to_algorithm_queue = to_algorithm_queue
+        self.to_detection_queue = to_detection_queue
         self.start_event = start_event
 
     def run(self):
@@ -14,13 +14,13 @@ class CollectorProcess(multiprocessing.Process):
             data = f"报文{i}"
             print(f"进程1: 收集到数据 {data}")
             try:
-                self.to_algorithm_queue.put(data, timeout=1)  # 尝试发送数据，避免无限等待
+                self.to_detection_queue.put(data, timeout=1)  # 尝试发送数据，避免无限等待
                 self.start_event.set()  # 通知算法进程开始处理
             except queue.Full:
                 print("队列已满，等待下一次发送")
             time.sleep(0.5)  # 根据报文发送间隔休眠
 
-class AlgorithmProcess(multiprocessing.Process):
+class DetectionProcess(multiprocessing.Process):
     def __init__(self, from_collector_queue, to_section_queue, start_event):
         super().__init__()
         self.from_collector_queue = from_collector_queue
@@ -41,14 +41,14 @@ class AlgorithmProcess(multiprocessing.Process):
             self.start_event.clear()  # 清除事件，准备下次接收
 
 class SectionProcess(multiprocessing.Process):
-    def __init__(self, from_algorithm_queue, to_alert_queue):
+    def __init__(self, from_detection_queue, to_alert_queue):
         super().__init__()
-        self.from_algorithm_queue = from_algorithm_queue
+        self.from_detection_queue = from_detection_queue
         self.to_alert_queue = to_alert_queue
 
     def run(self):
         while True:
-            data = self.from_algorithm_queue.get()  # 从算法进程接收数据
+            data = self.from_detection_queue.get()  # 从算法进程接收数据
             print(f"进程3: 进行故障选段处理 {data}")
             # 模拟选段算法，假设总是故障
             fault_detected = True
@@ -84,14 +84,14 @@ class AlertProcess(multiprocessing.Process):
 
 if __name__ == "__main__":
     # 创建队列和事件用于进程间通信
-    collector_to_algorithm_queue = multiprocessing.Queue()
+    collector_to_detection_queue = multiprocessing.Queue()
     algorithm_to_section_queue = multiprocessing.Queue()
     section_to_alert_queue = multiprocessing.Queue()
     start_event = multiprocessing.Event()
 
     # 实例化并启动进程
-    collector = CollectorProcess(collector_to_algorithm_queue, start_event)
-    algorithm = AlgorithmProcess(collector_to_algorithm_queue, algorithm_to_section_queue, start_event)
+    collector = CollectorProcess(collector_to_detection_queue, start_event)
+    algorithm = DetectionProcess(collector_to_detection_queue, algorithm_to_section_queue, start_event)
     section = SectionProcess(algorithm_to_section_queue, section_to_alert_queue)
     alert = AlertProcess(section_to_alert_queue)
 
