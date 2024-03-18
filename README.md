@@ -14,6 +14,7 @@
 |  8  |    [通信冗余设计](#Demo-8)     | 已完成 |
 |  9  |     [多进程通信](#Demo-9)     | 已完成 |
 | 10  |    [树莓派看门狗](#Demo-10)    | 已完成 |
+| 11  |   [树莓派开启串口](#Demo-11)    | 已完成 |
 
 <span id="Demo-1"></span>
 ## 01-串口自发自收  
@@ -357,3 +358,27 @@ htop
 ```
 8. **检查是否触发重启**
 根据你的/etc/watchdog.conf配置，如果系统负载超过了设置的阈值，看门狗应该会在一定时间后重启系统。确保你已经保存所有重要工作，因为当看门狗触发时，系统将会立即重启。
+
+
+<span id="Demo-11"></span>
+## 11-树莓派串口开启
+
+### 案例介绍
+本案例用于开启树莓派串口。默认情况下UART2~UART5禁用，使用本案例将所有串口开启。
+
+设备名称映射：
+- UART0: /dev/ttyAMA0
+- UART2: /dev/ttyAMA1
+- UART3: /dev/ttyAMA2
+- UART4: /dev/ttyAMA3
+- UART5: /dev/ttyAMA4
+
+### 使用说明
+- 本案例需要使用终端命令来授权运行，具体操作如下，在终端输入命令：
+ ```bash
+cd Desktop （进入代码所在文件夹，以防找不到代码，此处Desktop为举例文件夹名）
+sudo python3 main.py
+```
+- 然后等待树莓派重启使操作生效
+- 可以在终端输入命令查看串口是否开启：ls /dev/ttyAMA*
+- 结果应显示如下：/dev/ttyAMA0 /dev/ttyAMA1 /dev/ttyAMA2 /dev/ttyAMA3 /dev/ttyAMA4
