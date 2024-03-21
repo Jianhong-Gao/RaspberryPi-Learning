@@ -2,20 +2,21 @@
 ## 项目介绍
 这个项目旨在展示如何在树莓派（Raspberry Pi）上进行各种人工智能和嵌入式系统的学习和实践。以下是项目中包含的各种示例和演示：
 
-| 序号  |            名称            | 进度  |
-|:---:|:------------------------:|:---:|
-|  1  |    [串口自发自收](#Demo-1)     | 已完成 |
-|  2  |     [串口间通信](#Demo-2)     | 已完成 |
-|  3  |  [模拟单片机-树莓派通信](#Demo-3)  | 已完成 |
-|  4  |    [脚本发送邮件](#Demo-4)     | 已完成 |
-|  5  |   [录波文件解析与构建](#Demo-5)   | 已完成 |
-|  6  |     [开机自启动](#Demo-6)     | 已完成 |
-|  7  | [模拟单片机-树莓派通信v2](#Demo-7) | 已完成  |
-|  8  |    [通信冗余设计](#Demo-8)     | 已完成 |
-|  9  |     [多进程通信](#Demo-9)     | 已完成 |
-| 10  |    [树莓派看门狗](#Demo-10)    | 已完成 |
-| 11  |   [树莓派开启串口](#Demo-11)    | 已完成 |
-| 12  |   [树莓派固定IP](#Demo-12)    | 已完成 |
+| 序号  |                  名称                   | 进度  |
+|:---:|:-------------------------------------:|:---:|
+|  1  |           [串口自发自收](#Demo-1)           | 已完成 |
+|  2  |           [串口间通信](#Demo-2)            | 已完成 |
+|  3  |        [模拟单片机-树莓派通信](#Demo-3)         | 已完成 |
+|  4  |           [脚本发送邮件](#Demo-4)           | 已完成 |
+|  5  |         [录波文件解析与构建](#Demo-5)          | 已完成 |
+|  6  |           [开机自启动](#Demo-6)            | 已完成 |
+|  7  |       [模拟单片机-树莓派通信v2](#Demo-7)        | 已完成  |
+|  8  |           [通信冗余设计](#Demo-8)           | 已完成 |
+|  9  |           [多进程通信](#Demo-9)            | 已完成 |
+| 10  |          [树莓派看门狗](#Demo-10)           | 已完成 |
+| 11  |          [树莓派开启串口](#Demo-11)          | 已完成 |
+| 12  |          [树莓派固定IP](#Demo-12)          | 已完成 |
+| 13  | [Python文件转化为Share Object文件](#Demo-13) | 已完成 |
 
 <span id="Demo-1"></span>
 ## 01-串口自发自收  
@@ -465,3 +466,39 @@ sudo apt get install tightvncserver
     <img src="./Demo-12/image_demo12_8.png" width="100%">
 </div>
 
+<span id="Demo-13"></span>
+## 13-Python文件转化为Share Object文件
+
+### 案例介绍
+这个工具提供了一种简便的方式来编译Python文件为C扩展，并将生成的文件移动到指定的输出目录
+
+### 功能
+* **编译Python文件**：使用Cython将单个Python文件编译为C扩展（.so或.pyd文件，取决于操作系统）。
+* **自动移动**：将编译生成的C扩展自动移动到指定的输出目录。
+* **清理临时文件**：在编译和移动操作完成后，自动清理临时生成的文件和目录，包括Cython生成的.c文件和build目录 
+### 使用方法
+
+1. **安装依赖**：确保你的环境中安装了Cython和setuptools。如果还未安装，可以使用以下命令安装：
+```bash
+pip install Cython setuptools
+```
+2. **编写Python脚本**：创建一个Python脚本并导入compile_and_move_extension函数。指定你想要编译的Python文件路径、目标输出目录以及生成文件的扩展名。
+
+3. **执行脚本**：运行你的Python脚本来编译并移动生成的C扩展。
+
+示例代码：
+
+```bash
+from utils_deploy.compile_and_deploy import compile_and_move_extension
+if __name__ == "__main__":
+    python_file = "path/to/your/python_file.py"
+    output_dir = "path/to/your/output_directory"
+    compile_and_move_extension(python_file, output_dir)
+```
+确保替换path/to/your/python_file.py和path/to/your/output_directory为你自己的路径。
+
+### 注意事项
+
+* 生成的文件扩展名（.so或.pyd）取决于你的操作系统。默认情况下，Windows上为.pyd，Linux和macOS上为.so。
+
+* 这个工具假定build目录是编译过程的默认输出目录。如果你的项目配置修改了这一默认行为，请相应调整代码中的build_lib_path变量
