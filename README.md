@@ -397,7 +397,7 @@ sudo python3 main.py
 - 首先在网线连接下查看自己局域网的IP网段，树莓派终端上运行指令：ifconfig，如下图所示：
 
 <div style="text-align:center;">
-    <img src="./Demo-12/image_demo12_1.png" width="100%">
+    <img src="./assets/images/image_demo12_1.png" width="100%">
 </div>
 
 - 然后修改网络配置文件/dhcpcd.conf：
@@ -413,7 +413,7 @@ static routers=110.110.110.1
 static domain_name_servers=223.5.5.5
 ```
 <div style="text-align:center;">
-    <img src="./Demo-12/image_demo12_2.png" width="100%">
+    <img src="./assets/images/image_demo12_2.png" width="100%">
 </div>
 3- 不用开VNC，直接终端下载XRDP：
 
@@ -430,7 +430,7 @@ sudo apt get install tightvncserver
 2- PC端：网络设置：打开网络适配器设置，此时我们可以看到已经连接互联网的网络和与树莓派连接的网络，如下图所示。
 
 <div style="text-align:center;">
-    <img src="./Demo-12/image_demo12_3.png" width="100%">
+    <img src="./assets/images/image_demo12_3.png" width="100%">
 </div>
 
 
@@ -439,31 +439,31 @@ sudo apt get install tightvncserver
 ③	选中“Internet协议版本4（TCP/IPv4）”，属性按钮被激活，选中；   
 操作如下图所示。
 <div style="text-align:center;">
-    <img src="./Demo-12/image_demo12_4.png" width="100%">
+    <img src="./assets/images/image_demo12_4.png" width="100%">
 </div>
 ④	在Internet协议版本4（TCP/IPv4）属性窗口中选中“使用下面的IP地址”  
 ⑤	IP地址和子网掩码分别填写：110.110.110.1和255.255.255.0  
 ⑥	完成操作4和5后，点击确认；  
 操作如下图所示。
 <div style="text-align:center;">
-    <img src="./Demo-12/image_demo12_5.png" width="100%">
+    <img src="./assets/images/image_demo12_5.png" width="100%">
 </div>
 
 3、	PC端：远程桌面连接：  
 ①	登入远程桌面连接；  
 ②	填写信息如下图所示；
 <div style="text-align:center;">
-    <img src="./Demo-12/image_demo12_6.png" width="100%">
+    <img src="./assets/images/image_demo12_6.png" width="100%">
 </div>
 
 ③	若初次连接，会出现确认安全菜单，全部选择确认，然后再次输入账号密码即可登入；非初次连接，会出现账户密码输入选项，如下图所示，输入默认密码（pi），输入完成后即可登入。
 <div style="text-align:center;">
-    <img src="./Demo-12/image_demo12_7.png" width="100%">
+    <img src="./assets/images/image_demo12_7.png" width="100%">
 </div>
 
 ④	点击确认后，出现远程连接桌面，如下图所示。至此，树莓派网线直连操作已完成。
 <div style="text-align:center;">
-    <img src="./Demo-12/image_demo12_8.png" width="100%">
+    <img src="./assets/images/image_demo12_8.png" width="100%">
 </div>
 
 <span id="Demo-13"></span>
