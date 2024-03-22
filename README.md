@@ -523,7 +523,7 @@ if __name__ == "__main__":
 lsblk
 ```
 <div style="text-align:center;">
-    <img src="./assets/images/image_demo14_1.png" width="100%">
+    <img src="assets/images/image_demo14_1.png" width="100%">
 </div>
 
 3. 备份
