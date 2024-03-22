@@ -17,6 +17,7 @@
 | 11  |          [树莓派开启串口](#Demo-11)          | 已完成 |
 | 12  |          [树莓派固定IP](#Demo-12)          | 已完成 |
 | 13  | [Python文件转化为Share Object文件](#Demo-13) | 已完成 |
+| 14  |      [树莓派系统压备份(镜像文件)](#Demo-14)       | 已完成 |
 
 <span id="Demo-1"></span>
 ## 01-串口自发自收  
@@ -391,8 +392,7 @@ sudo python3 main.py
 ## 12-树莓派固定IP
 
 ### 案例介绍
-
-本案例用于设置树莓派的固定IP，将固定IP设置为110.110.110.110。
+本案例用于设置树莓派的固定IP，将固定IP设置为110.110.110.110。(192.168.3.130)
 ### 配置流程
 - 首先在网线连接下查看自己局域网的IP网段，树莓派终端上运行指令：ifconfig，如下图所示：
 
@@ -402,8 +402,10 @@ sudo python3 main.py
 
 - 然后修改网络配置文件/dhcpcd.conf：
 
-1- 树莓派终端上运行指令：sudo nano /etc/dhcpcd.conf
-
+1- 树莓派终端上运行指令：
+```bash
+sudo nano /etc/dhcpcd.conf
+```
 2- 找到#interface eth0，在其注释下方，填写相关信息如下图所示。其中需要将IP地址和routers分别修改为110.110.110.110/24 与 110.110.110.1。
 添加内容为：
 ```bash
@@ -412,18 +414,18 @@ static ip_address=110.110.110.110/24
 static routers=110.110.110.1
 static domain_name_servers=223.5.5.5
 ```
+or
+```bash
+interface eth0
+static ip_address=192.168.3.130/24
+static routers=192.168.3.1
+static domain_name_servers=223.5.5.5
+```
 <div style="text-align:center;">
     <img src="./assets/images/image_demo12_2.png" width="100%">
 </div>
-3- 不用开VNC，直接终端下载XRDP：
 
-```bash
-sudo apt update
-sudo apt get install xrdp
-sudo apt get install tightvncserver
-```
-依次下载，可能会出现网络不稳定，多尝试几次
-4- 填写IP信息完成后保存并重启树莓派：
+3- 填写IP信息完成后保存并重启树莓派：
 - 完成后检查是否设置成功：
 
 1- 物理连接：将树莓派通过网线直接连接笔记本电脑，若笔记本电脑已经使用有线方式连接互联网，占用了网口，则需要使用usb网口转换器拓展笔记本网口。若笔记本连接的是无线网，则直接连接即可。  
@@ -502,3 +504,45 @@ if __name__ == "__main__":
 * 生成的文件扩展名（.so或.pyd）取决于你的操作系统。默认情况下，Windows上为.pyd，Linux和macOS上为.so。
 
 * 这个工具假定build目录是编译过程的默认输出目录。如果你的项目配置修改了这一默认行为，请相应调整代码中的build_lib_path变量
+
+<span id="Demo-14"></span>
+## 14-树莓派系统压备份(镜像文件)
+
+### 案例介绍
+本案例介绍将配置好的树莓派系统进行压缩备份，存储为镜像文件(.image)
+
+### 环境要求
+如果电脑是windows系统,需要提前安装虚拟机。
+1.Ubuntu 64位 版本号：18.04;
+2.FileZila软件
+### 操作步骤
+
+1. 将配置好环境的树莓派sd使用读卡器插入电脑，连接虚拟机；
+2. 先用lsblk命令查看SD卡的盘符
+```bash
+lsblk
+```
+<div style="text-align:center;">
+    <img src="./assets/images/image_demo14_1.png" width="100%">
+</div>
+
+3. 备份
+```bash
+sudo  dd  if=/dev/sdb  of=./rpi-tw-0322.img  bs=8M
+```
+4. 压缩
+```bash
+sudo pishrink.sh -s rpi-tw-0322.img rpi-tw-0322-compressed.img
+```
+5. 文件转移
+使用FileZila,连接上虚拟机的IP
+1) 首先，filezilla与虚拟机之间是通过ssh连接，所以需在虚拟机上安装ssh-server
+```bash
+apt-get install openssh-server
+```
+2) 查看虚拟机的IP
+```bash
+ip addr
+```
+3) 连接FileZila，选择image文件传输
+6. 烧写系统
