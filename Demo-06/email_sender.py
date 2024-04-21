@@ -59,7 +59,7 @@ if __name__ == "__main__":
             <p>您好，这是一份来自您的RaspberryPi的自动邮件通知。</p>
             <p>您的设备已于{formatted_time}成功开机，Wi-Fi接口的IP地址是: {wifi_ip}。</p>
             """
-            to_email = '772962760@qq.com'
+            to_email = 'xxxxx@qq.com'
             send_email(to_email, subject, message)
             break
         else:
