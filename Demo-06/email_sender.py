@@ -26,8 +26,8 @@ def get_wifi_ip():
         return "未知"
 
 def send_email(to_email, subject, message):
-    sender_email = 'gaojianhong1994@foxmail.com'
-    sender_password = "lctwvkmvhwwhbbjj"
+    sender_email = 'xxx@foxmail.com'
+    sender_password = "xxx"
     sender_name = 'RaspberryPi'
     receiver_name = 'Anybody'
 
