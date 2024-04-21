@@ -1,4 +1,4 @@
-# ai-rpi-learning
+# RaspberryPi-Learning
 ## 项目介绍
 这个项目旨在展示如何在树莓派（Raspberry Pi）上进行各种人工智能和嵌入式系统的学习和实践。以下是项目中包含的各种示例和演示：
 
