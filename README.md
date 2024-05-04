@@ -60,7 +60,7 @@
 | UART0  | TX  | Normal |  Normal  | Normal  |
 | UART0  | RX  | Normal | Error  | Normal  |
 | UART2  | TX  | Normal |    Normal     | Normal  |
-| UART2  | RX  | Normal |    Error     | Normal  |
+| UART2  | RX  | Normal |    Normal     | Normal  |
 | UART3  | TX  | Normal |     Normal    | Normal  |
 | UART3  | RX  | Normal |    Error     | Normal  |
 | UART4  | TX  | Error |     Normal    | Normal  |
